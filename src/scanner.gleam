@@ -66,8 +66,8 @@ pub fn token_type_to_string(token_type: TokenType) -> String {
   case token_type {
     LeftParen -> "LEFT_PAREN"
     RightParen -> "RIGHT_PAREN"
-    LeftBrace -> ""
-    RightBrace -> ""
+    LeftBrace -> "LEFT_BRACE"
+    RightBrace -> "RIGHT_BRACE"
     Comma -> ""
     Dot -> ""
     Minus -> ""
@@ -140,6 +140,14 @@ pub fn scan_current_token(
         ]
         ")" -> [
           Token(RightParen, ")", option.None, line),
+          ..scan_current_token(source, start + 1, current + 1, line)
+        ]
+        "{" -> [
+          Token(LeftBrace, "{", option.None, line),
+          ..scan_current_token(source, start + 1, current + 1, line)
+        ]
+        "}" -> [
+          Token(RightBrace, "}", option.None, line),
           ..scan_current_token(source, start + 1, current + 1, line)
         ]
         "\n" -> scan_current_token(source, start + 1, current + 1, line + 1)
