@@ -10,3 +10,8 @@ pub fn scan_left_paran_test() {
     scanner.Token(scanner.EOF, "", option.None, 1),
   ])
 }
+
+pub fn count_substr_test() {
+  scanner.count_substr("t", "test")
+  |> should.equal(2)
+}

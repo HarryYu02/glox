@@ -17,7 +17,8 @@ pub fn main() {
           scanner.print_tokens(tokens)
           case
             list.any(tokens, fn(token) {
-              token.token_type == scanner.ParseError
+              token.token_type == scanner.UnexpectedCharacterError
+              || token.token_type == scanner.UnterminatedStringError
             })
           {
             True -> exit(65)
