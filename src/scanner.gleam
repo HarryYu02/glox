@@ -68,13 +68,13 @@ pub fn token_type_to_string(token_type: TokenType) -> String {
     RightParen -> "RIGHT_PAREN"
     LeftBrace -> "LEFT_BRACE"
     RightBrace -> "RIGHT_BRACE"
-    Comma -> ""
-    Dot -> ""
-    Minus -> ""
-    Plus -> ""
-    Semicolon -> ""
+    Comma -> "COMMA"
+    Dot -> "DOT"
+    Minus -> "MINUS"
+    Plus -> "PLUS"
+    Semicolon -> "SEMICOLON"
     Slash -> ""
-    Star -> ""
+    Star -> "STAR"
     Bang -> ""
     BangEqual -> ""
     Equal -> ""
@@ -148,6 +148,30 @@ pub fn scan_current_token(
         ]
         "}" -> [
           Token(RightBrace, "}", option.None, line),
+          ..scan_current_token(source, start + 1, current + 1, line)
+        ]
+        "," -> [
+          Token(Comma, ",", option.None, line),
+          ..scan_current_token(source, start + 1, current + 1, line)
+        ]
+        "." -> [
+          Token(Dot, ".", option.None, line),
+          ..scan_current_token(source, start + 1, current + 1, line)
+        ]
+        "-" -> [
+          Token(Minus, "-", option.None, line),
+          ..scan_current_token(source, start + 1, current + 1, line)
+        ]
+        "+" -> [
+          Token(Plus, "+", option.None, line),
+          ..scan_current_token(source, start + 1, current + 1, line)
+        ]
+        ";" -> [
+          Token(Semicolon, ";", option.None, line),
+          ..scan_current_token(source, start + 1, current + 1, line)
+        ]
+        "*" -> [
+          Token(Star, "*", option.None, line),
           ..scan_current_token(source, start + 1, current + 1, line)
         ]
         "\n" -> scan_current_token(source, start + 1, current + 1, line + 1)
