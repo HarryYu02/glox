@@ -1,3 +1,4 @@
+import gleam/int
 import gleam/io
 import gleam/list
 import gleam/option.{type Option}
@@ -51,6 +52,7 @@ pub type TokenType {
   While
 
   EOF
+  ParseError
 }
 
 pub type Token {
@@ -103,6 +105,7 @@ pub fn token_type_to_string(token_type: TokenType) -> String {
     Var -> ""
     While -> ""
     EOF -> "EOF"
+    ParseError -> ""
   }
 }
 
@@ -117,11 +120,19 @@ pub fn token_to_string(token: Token) -> String {
 }
 
 pub fn print_token(token: Token) -> Nil {
-  io.println(token_to_string(token))
+  case token.token_type {
+    ParseError ->
+      print_error("Unexpected character: " <> token.lexeme, token.line)
+    _ -> io.println(token_to_string(token))
+  }
 }
 
 pub fn print_tokens(tokens: List(Token)) -> Nil {
-  list.each(tokens, fn(token) { io.println(token_to_string(token)) })
+  list.each(tokens, fn(token) { print_token(token) })
+}
+
+pub fn print_error(error: String, line: Int) -> Nil {
+  io.println("[line " <> int.to_string(line) <> "] Error: " <> error)
 }
 
 pub fn scan_current_token(
@@ -175,7 +186,17 @@ pub fn scan_current_token(
           ..scan_current_token(source, start + 1, current + 1, line)
         ]
         "\n" -> scan_current_token(source, start + 1, current + 1, line + 1)
-        _ -> panic as "Unexpected character."
+        _ -> {
+          [
+            Token(
+              ParseError,
+              string.slice(source, current, 1),
+              option.None,
+              line,
+            ),
+            ..scan_current_token(source, start + 1, current + 1, line)
+          ]
+        }
       }
   }
 }

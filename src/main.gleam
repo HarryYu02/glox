@@ -1,4 +1,5 @@
 import gleam/io
+import gleam/list
 import gleam/string
 
 import argv
@@ -19,7 +20,18 @@ pub fn main() {
           case string.length(contents) {
             // Uncomment this line to pass the first stage
             0 -> io.println("EOF  null")
-            _ -> scanner.print_tokens(scanner.scan_tokens(contents))
+            _ -> {
+              let tokens = scanner.scan_tokens(contents)
+              scanner.print_tokens(tokens)
+              case
+                list.any(tokens, fn(token) {
+                  token.token_type == scanner.ParseError
+                })
+              {
+                True -> exit(65)
+                False -> exit(0)
+              }
+            }
           }
         }
         Error(error) -> {
@@ -37,3 +49,6 @@ pub fn main() {
 
 @external(erlang, "erlang", "halt")
 pub fn exit(code: Int) -> Nil
+
+@external(erlang, "init", "stop")
+pub fn stop(code: Int) -> Nil
