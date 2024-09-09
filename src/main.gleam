@@ -8,30 +8,21 @@ import simplifile
 import scanner
 
 pub fn main() {
-  // You can use print statements as follows for debugging, they'll be visible when running tests.
-  io.println_error("Logs from your program will appear here!")
-
   let args = argv.load().arguments
 
   case args {
     ["tokenize", filename] -> {
       case simplifile.read(filename) {
         Ok(contents) -> {
-          case string.length(contents) {
-            // Uncomment this line to pass the first stage
-            0 -> io.println("EOF  null")
-            _ -> {
-              let tokens = scanner.scan_tokens(contents)
-              scanner.print_tokens(tokens)
-              case
-                list.any(tokens, fn(token) {
-                  token.token_type == scanner.ParseError
-                })
-              {
-                True -> exit(65)
-                False -> exit(0)
-              }
-            }
+          let tokens = scanner.scan_tokens(contents)
+          scanner.print_tokens(tokens)
+          case
+            list.any(tokens, fn(token) {
+              token.token_type == scanner.ParseError
+            })
+          {
+            False -> exit(0)
+            True -> exit(65)
           }
         }
         Error(error) -> {

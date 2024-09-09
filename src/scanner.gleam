@@ -132,7 +132,7 @@ pub fn print_tokens(tokens: List(Token)) -> Nil {
 }
 
 pub fn print_error(error: String, line: Int) -> Nil {
-  io.println("[line " <> int.to_string(line) <> "] Error: " <> error)
+  io.println_error("[line " <> int.to_string(line) <> "] Error: " <> error)
 }
 
 pub fn scan_current_token(
