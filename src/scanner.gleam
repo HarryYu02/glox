@@ -2,6 +2,7 @@ import gleam/int
 import gleam/io
 import gleam/list
 import gleam/option.{type Option}
+import gleam/result
 import gleam/string
 
 pub type TokenType {
@@ -75,7 +76,7 @@ pub fn token_type_to_string(token_type: TokenType) -> String {
     Minus -> "MINUS"
     Plus -> "PLUS"
     Semicolon -> "SEMICOLON"
-    Slash -> ""
+    Slash -> "SLASH"
     Star -> "STAR"
     Bang -> "BANG"
     BangEqual -> "BANG_EQUAL"
@@ -85,27 +86,27 @@ pub fn token_type_to_string(token_type: TokenType) -> String {
     GreaterEqual -> "GREATER_EQUAL"
     Less -> "LESS"
     LessEqual -> "LESS_EQUAL"
-    Identifier -> ""
-    Stringy -> ""
-    Numbery -> ""
-    And -> ""
-    Class -> ""
-    Else -> ""
-    Falsey -> ""
-    Fun -> ""
-    For -> ""
-    If -> ""
-    Nilly -> ""
-    Or -> ""
-    Print -> ""
-    Return -> ""
-    Super -> ""
-    This -> ""
-    Truey -> ""
-    Var -> ""
-    While -> ""
+    Identifier -> "IDENTIFIER"
+    Stringy -> "STRING"
+    Numbery -> "NUMBER"
+    And -> "AND"
+    Class -> "CLASS"
+    Else -> "ELSE"
+    Falsey -> "FALSE"
+    Fun -> "FUN"
+    For -> "FOR"
+    If -> "IF"
+    Nilly -> "NIL"
+    Or -> "OR"
+    Print -> "PRINT"
+    Return -> "RETURN"
+    Super -> "SUPER"
+    This -> "THIS"
+    Truey -> "TRUE"
+    Var -> "VAR"
+    While -> "WHILE"
     EOF -> "EOF"
-    ParseError -> ""
+    ParseError -> "ERROR"
   }
 }
 
@@ -135,129 +136,123 @@ pub fn print_error(error: String, line: Int) -> Nil {
   io.println_error("[line " <> int.to_string(line) <> "] Error: " <> error)
 }
 
-pub fn scan_current_token(
-  source: String,
-  start: Int,
-  current: Int,
-  line: Int,
-) -> List(Token) {
-  case current >= string.length(source) {
-    True -> [Token(EOF, "", option.None, line)]
-    False -> {
-      let current_char = string.slice(source, current, 1)
-      let next_char = string.slice(source, current + 1, 1)
+pub fn scan_current_token(source: String, line: Int) -> List(Token) {
+  case source {
+    "" -> [Token(EOF, "", option.None, line)]
+    _ -> {
+      let current_char = string.first(source)
+      let next_char = string.drop_left(source, 1) |> string.first
       case current_char {
-        "(" -> [
+        Error(Nil) -> [Token(EOF, "", option.None, line)]
+        Ok("(") -> [
           Token(LeftParen, "(", option.None, line),
-          ..scan_current_token(source, start + 1, current + 1, line)
+          ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        ")" -> [
+        Ok(")") -> [
           Token(RightParen, ")", option.None, line),
-          ..scan_current_token(source, start + 1, current + 1, line)
+          ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        "{" -> [
+        Ok("{") -> [
           Token(LeftBrace, "{", option.None, line),
-          ..scan_current_token(source, start + 1, current + 1, line)
+          ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        "}" -> [
+        Ok("}") -> [
           Token(RightBrace, "}", option.None, line),
-          ..scan_current_token(source, start + 1, current + 1, line)
+          ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        "," -> [
+        Ok(",") -> [
           Token(Comma, ",", option.None, line),
-          ..scan_current_token(source, start + 1, current + 1, line)
+          ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        "." -> [
+        Ok(".") -> [
           Token(Dot, ".", option.None, line),
-          ..scan_current_token(source, start + 1, current + 1, line)
+          ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        "-" -> [
+        Ok("-") -> [
           Token(Minus, "-", option.None, line),
-          ..scan_current_token(source, start + 1, current + 1, line)
+          ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        "+" -> [
+        Ok("+") -> [
           Token(Plus, "+", option.None, line),
-          ..scan_current_token(source, start + 1, current + 1, line)
+          ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        ";" -> [
+        Ok(";") -> [
           Token(Semicolon, ";", option.None, line),
-          ..scan_current_token(source, start + 1, current + 1, line)
+          ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        "*" -> [
+        Ok("*") -> [
           Token(Star, "*", option.None, line),
-          ..scan_current_token(source, start + 1, current + 1, line)
+          ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        "!" -> {
+        Ok("!") -> {
           case next_char {
-            "" -> [
-              Token(Bang, "!", option.None, line),
-              Token(EOF, "", option.None, line),
-            ]
-            "=" -> [
+            Ok("=") -> [
               Token(BangEqual, "!=", option.None, line),
-              ..scan_current_token(source, start + 2, current + 2, line)
+              ..scan_current_token(string.drop_left(source, 2), line)
             ]
             _ -> [
               Token(Bang, "!", option.None, line),
-              ..scan_current_token(source, start + 1, current + 1, line)
+              ..scan_current_token(string.drop_left(source, 1), line)
             ]
           }
         }
-        "=" -> {
+        Ok("=") -> {
           case next_char {
-            "" -> [
-              Token(Equal, "=", option.None, line),
-              Token(EOF, "", option.None, line),
-            ]
-            "=" -> [
+            Ok("=") -> [
               Token(EqualEqual, "==", option.None, line),
-              ..scan_current_token(source, start + 2, current + 2, line)
+              ..scan_current_token(string.drop_left(source, 2), line)
             ]
             _ -> [
               Token(Equal, "=", option.None, line),
-              ..scan_current_token(source, start + 1, current + 1, line)
+              ..scan_current_token(string.drop_left(source, 1), line)
             ]
           }
         }
-        "<" -> {
+        Ok("<") -> {
           case next_char {
-            "" -> [
-              Token(Less, "<", option.None, line),
-              Token(EOF, "", option.None, line),
-            ]
-            "=" -> [
+            Ok("=") -> [
               Token(LessEqual, "<=", option.None, line),
-              ..scan_current_token(source, start + 2, current + 2, line)
+              ..scan_current_token(string.drop_left(source, 2), line)
             ]
             _ -> [
               Token(Less, "<", option.None, line),
-              ..scan_current_token(source, start + 1, current + 1, line)
+              ..scan_current_token(string.drop_left(source, 1), line)
             ]
           }
         }
-        ">" -> {
+        Ok(">") -> {
           case next_char {
-            "" -> [
-              Token(Greater, ">", option.None, line),
-              Token(EOF, "", option.None, line),
-            ]
-            "=" -> [
+            Ok("=") -> [
               Token(GreaterEqual, ">=", option.None, line),
-              ..scan_current_token(source, start + 2, current + 2, line)
+              ..scan_current_token(string.drop_left(source, 2), line)
             ]
             _ -> [
               Token(Greater, ">", option.None, line),
-              ..scan_current_token(source, start + 1, current + 1, line)
+              ..scan_current_token(string.drop_left(source, 1), line)
             ]
           }
         }
-        " " | "\r" | "\t" ->
-          scan_current_token(source, start + 1, current + 1, line)
-        "\n" -> scan_current_token(source, start + 1, current + 1, line + 1)
+        Ok("/") -> {
+          case next_char {
+            Ok("/") -> todo
+            _ -> [
+              Token(Slash, "/", option.None, line),
+              ..scan_current_token(string.drop_left(source, 1), line)
+            ]
+          }
+        }
+        Ok(" ") | Ok("\r") | Ok("\t") ->
+          scan_current_token(string.drop_left(source, 1), line)
+        Ok("\n") -> scan_current_token(string.drop_left(source, 1), line + 1)
         _ -> {
           [
-            Token(ParseError, current_char, option.None, line),
-            ..scan_current_token(source, start + 1, current + 1, line)
+            Token(
+              ParseError,
+              result.unwrap(current_char, ""),
+              option.None,
+              line,
+            ),
+            ..scan_current_token(string.drop_left(source, 1), line)
           ]
         }
       }
@@ -266,5 +261,5 @@ pub fn scan_current_token(
 }
 
 pub fn scan_tokens(source: String) -> List(Token) {
-  scan_current_token(source, 0, 0, 1)
+  scan_current_token(source, 1)
 }
