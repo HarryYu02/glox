@@ -234,7 +234,11 @@ pub fn scan_current_token(source: String, line: Int) -> List(Token) {
         }
         Ok("/") -> {
           case next_char {
-            Ok("/") -> todo
+            Ok("/") ->
+              case string.contains(source, "\n") {
+                True -> scan_current_token(string.crop(source, "\n"), line)
+                False -> [Token(EOF, "", option.None, line)]
+              }
             _ -> [
               Token(Slash, "/", option.None, line),
               ..scan_current_token(string.drop_left(source, 1), line)
