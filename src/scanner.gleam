@@ -332,7 +332,7 @@ fn scan_current_token(source: String, line: Int) -> List(Token) {
         }
         _ -> {
           let is_current_digit = is_digit(current_char)
-          let is_current_alpha = is_alpha(current_char)
+          let is_current_alpha = is_alphanumeric(current_char)
           case current_char {
             _ if is_current_digit -> {
               let #(integer, rest) = split_str_until(source, is_digit)
@@ -369,10 +369,12 @@ fn scan_current_token(source: String, line: Int) -> List(Token) {
             }
             _ if is_current_alpha -> {
               let #(identifier, rest) = split_str_until(source, is_alphanumeric)
-              [
-                Token(Identifier, identifier, option.Some(identifier), line),
-                ..scan_current_token(rest, line)
-              ]
+              case identifier {
+                _ -> [
+                  Token(Identifier, identifier, option.None, line),
+                  ..scan_current_token(rest, line)
+                ]
+              }
             }
             _ -> [
               Token(UnexpectedCharacterError, current_char, option.None, line),
