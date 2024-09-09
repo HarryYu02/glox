@@ -143,57 +143,95 @@ pub fn count_substr(substr: String, str: String) {
   list.length(string.split(str, substr)) - 1
 }
 
-pub fn scan_current_token(source: String, line: Int) -> List(Token) {
+pub fn is_digit(str: String) -> Bool {
+  list.all(string.to_utf_codepoints(str), fn(utf_codepoint) {
+    let utf_int = string.utf_codepoint_to_int(utf_codepoint)
+    utf_int >= 48 && utf_int <= 57
+  })
+}
+
+pub fn is_alpha(str: String) -> Bool {
+  list.all(string.to_utf_codepoints(str), fn(utf_codepoint) {
+    let utf_int = string.utf_codepoint_to_int(utf_codepoint)
+    todo
+  })
+}
+
+fn split_until(
+  left: String,
+  right: String,
+  satisfy: fn(String) -> Bool,
+) -> #(String, String) {
+  let first = string.first(right) |> result.unwrap("")
+  let is_satisfied = satisfy(first)
+  case first {
+    "" -> #(left, right)
+    _ if !is_satisfied -> #(left, right)
+    _ -> split_until(left <> first, string.drop_left(right, 1), satisfy)
+  }
+}
+
+pub fn split_str_until(
+  str: String,
+  satisfy: fn(String) -> Bool,
+) -> #(String, String) {
+  split_until("", str, satisfy)
+}
+
+fn scan_current_token(source: String, line: Int) -> List(Token) {
   case source {
     "" -> [Token(EOF, "", option.None, line)]
     _ -> {
-      let current_char = string.first(source)
-      let next_char = string.drop_left(source, 1) |> string.first
+      let current_char = string.first(source) |> result.unwrap("")
+      let next_char =
+        string.drop_left(source, 1)
+        |> string.first
+        |> result.unwrap("")
       case current_char {
-        Error(Nil) -> [Token(EOF, "", option.None, line)]
-        Ok("(") -> [
+        "" -> [Token(EOF, "", option.None, line)]
+        "(" -> [
           Token(LeftParen, "(", option.None, line),
           ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        Ok(")") -> [
+        ")" -> [
           Token(RightParen, ")", option.None, line),
           ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        Ok("{") -> [
+        "{" -> [
           Token(LeftBrace, "{", option.None, line),
           ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        Ok("}") -> [
+        "}" -> [
           Token(RightBrace, "}", option.None, line),
           ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        Ok(",") -> [
+        "," -> [
           Token(Comma, ",", option.None, line),
           ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        Ok(".") -> [
+        "." -> [
           Token(Dot, ".", option.None, line),
           ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        Ok("-") -> [
+        "-" -> [
           Token(Minus, "-", option.None, line),
           ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        Ok("+") -> [
+        "+" -> [
           Token(Plus, "+", option.None, line),
           ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        Ok(";") -> [
+        ";" -> [
           Token(Semicolon, ";", option.None, line),
           ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        Ok("*") -> [
+        "*" -> [
           Token(Star, "*", option.None, line),
           ..scan_current_token(string.drop_left(source, 1), line)
         ]
-        Ok("!") -> {
+        "!" -> {
           case next_char {
-            Ok("=") -> [
+            "=" -> [
               Token(BangEqual, "!=", option.None, line),
               ..scan_current_token(string.drop_left(source, 2), line)
             ]
@@ -203,9 +241,9 @@ pub fn scan_current_token(source: String, line: Int) -> List(Token) {
             ]
           }
         }
-        Ok("=") -> {
+        "=" -> {
           case next_char {
-            Ok("=") -> [
+            "=" -> [
               Token(EqualEqual, "==", option.None, line),
               ..scan_current_token(string.drop_left(source, 2), line)
             ]
@@ -215,9 +253,9 @@ pub fn scan_current_token(source: String, line: Int) -> List(Token) {
             ]
           }
         }
-        Ok("<") -> {
+        "<" -> {
           case next_char {
-            Ok("=") -> [
+            "=" -> [
               Token(LessEqual, "<=", option.None, line),
               ..scan_current_token(string.drop_left(source, 2), line)
             ]
@@ -227,9 +265,9 @@ pub fn scan_current_token(source: String, line: Int) -> List(Token) {
             ]
           }
         }
-        Ok(">") -> {
+        ">" -> {
           case next_char {
-            Ok("=") -> [
+            "=" -> [
               Token(GreaterEqual, ">=", option.None, line),
               ..scan_current_token(string.drop_left(source, 2), line)
             ]
@@ -239,9 +277,9 @@ pub fn scan_current_token(source: String, line: Int) -> List(Token) {
             ]
           }
         }
-        Ok("/") -> {
+        "/" -> {
           case next_char {
-            Ok("/") -> {
+            "/" -> {
               case string.contains(source, "\n") {
                 True -> scan_current_token(string.crop(source, "\n"), line)
                 False -> [Token(EOF, "", option.None, line)]
@@ -253,10 +291,10 @@ pub fn scan_current_token(source: String, line: Int) -> List(Token) {
             ]
           }
         }
-        Ok(" ") | Ok("\r") | Ok("\t") ->
+        " " | "\r" | "\t" ->
           scan_current_token(string.drop_left(source, 1), line)
-        Ok("\n") -> scan_current_token(string.drop_left(source, 1), line + 1)
-        Ok("\"") -> {
+        "\n" -> scan_current_token(string.drop_left(source, 1), line + 1)
+        "\"" -> {
           let split_by_double_quote =
             string.split_once(string.drop_left(source, 1), "\"")
           case split_by_double_quote {
@@ -281,15 +319,48 @@ pub fn scan_current_token(source: String, line: Int) -> List(Token) {
           }
         }
         _ -> {
-          [
-            Token(
-              UnexpectedCharacterError,
-              result.unwrap(current_char, ""),
-              option.None,
-              line,
-            ),
-            ..scan_current_token(string.drop_left(source, 1), line)
-          ]
+          let is_current_digit = is_digit(current_char)
+          // let is_current_alpha = is_alpha(current_char)
+          case current_char {
+            _ if is_current_digit -> {
+              let #(integer, rest) = split_str_until(source, is_digit)
+              case string.first(rest) |> result.unwrap("") {
+                "." -> {
+                  let #(decimal, rest_after_decimal) =
+                    split_str_until(string.drop_left(rest, 1), is_digit)
+                  case string.length(decimal) {
+                    0 -> [
+                      Token(
+                        Numbery,
+                        integer,
+                        option.Some(integer <> ".0"),
+                        line,
+                      ),
+                      ..scan_current_token(rest, line)
+                    ]
+                    _ -> [
+                      Token(
+                        Numbery,
+                        integer <> "." <> decimal,
+                        option.Some(integer <> "." <> decimal),
+                        line,
+                      ),
+                      ..scan_current_token(rest_after_decimal, line)
+                    ]
+                  }
+                }
+                _ -> [
+                  Token(Numbery, integer, option.Some(integer <> ".0"), line),
+                  ..scan_current_token(rest, line)
+                ]
+              }
+            }
+            // alpha if is_current_alpha -> todo as "identifiers"
+            _ -> [
+              Token(UnexpectedCharacterError, current_char, option.None, line),
+              ..scan_current_token(string.drop_left(source, 1), line)
+            ]
+          }
         }
       }
     }
