@@ -81,10 +81,10 @@ pub fn token_type_to_string(token_type: TokenType) -> String {
     BangEqual -> "BANG_EQUAL"
     Equal -> "EQUAL"
     EqualEqual -> "EQUAL_EQUAL"
-    Greater -> ""
-    GreaterEqual -> ""
-    Less -> ""
-    LessEqual -> ""
+    Greater -> "GREATER"
+    GreaterEqual -> "GREATER_EQUAL"
+    Less -> "LESS"
+    LessEqual -> "LESS_EQUAL"
     Identifier -> ""
     Stringy -> ""
     Numbery -> ""
@@ -145,6 +145,7 @@ pub fn scan_current_token(
     True -> [Token(EOF, "", option.None, line)]
     False -> {
       let current_char = string.slice(source, current, 1)
+      let next_char = string.slice(source, current + 1, 1)
       case current_char {
         "(" -> [
           Token(LeftParen, "(", option.None, line),
@@ -187,7 +188,6 @@ pub fn scan_current_token(
           ..scan_current_token(source, start + 1, current + 1, line)
         ]
         "!" -> {
-          let next_char = string.slice(source, current + 1, 1)
           case next_char {
             "" -> [
               Token(Bang, "!", option.None, line),
@@ -204,7 +204,6 @@ pub fn scan_current_token(
           }
         }
         "=" -> {
-          let next_char = string.slice(source, current + 1, 1)
           case next_char {
             "" -> [
               Token(Equal, "=", option.None, line),
@@ -221,35 +220,33 @@ pub fn scan_current_token(
           }
         }
         "<" -> {
-          let next_char = string.slice(source, current + 1, 1)
           case next_char {
             "" -> [
-              Token(Bang, "!", option.None, line),
+              Token(Less, "<", option.None, line),
               Token(EOF, "", option.None, line),
             ]
             "=" -> [
-              Token(BangEqual, "!=", option.None, line),
+              Token(LessEqual, "<=", option.None, line),
               ..scan_current_token(source, start + 2, current + 2, line)
             ]
             _ -> [
-              Token(Bang, "*", option.None, line),
+              Token(Less, "<", option.None, line),
               ..scan_current_token(source, start + 1, current + 1, line)
             ]
           }
         }
         ">" -> {
-          let next_char = string.slice(source, current + 1, 1)
           case next_char {
             "" -> [
-              Token(Bang, "!", option.None, line),
+              Token(Greater, ">", option.None, line),
               Token(EOF, "", option.None, line),
             ]
             "=" -> [
-              Token(BangEqual, "!=", option.None, line),
+              Token(GreaterEqual, ">=", option.None, line),
               ..scan_current_token(source, start + 2, current + 2, line)
             ]
             _ -> [
-              Token(Bang, "*", option.None, line),
+              Token(Greater, ">", option.None, line),
               ..scan_current_token(source, start + 1, current + 1, line)
             ]
           }
