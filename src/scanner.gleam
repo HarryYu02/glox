@@ -143,8 +143,9 @@ pub fn scan_current_token(
 ) -> List(Token) {
   case current >= string.length(source) {
     True -> [Token(EOF, "", option.None, line)]
-    False ->
-      case string.slice(source, current, 1) {
+    False -> {
+      let current_char = string.slice(source, current, 1)
+      case current_char {
         "(" -> [
           Token(LeftParen, "(", option.None, line),
           ..scan_current_token(source, start + 1, current + 1, line)
@@ -185,19 +186,85 @@ pub fn scan_current_token(
           Token(Star, "*", option.None, line),
           ..scan_current_token(source, start + 1, current + 1, line)
         ]
+        "!" -> {
+          let next_char = string.slice(source, current + 1, 1)
+          case next_char {
+            "" -> [
+              Token(Bang, "!", option.None, line),
+              Token(EOF, "", option.None, line),
+            ]
+            "=" -> [
+              Token(BangEqual, "!=", option.None, line),
+              ..scan_current_token(source, start + 2, current + 2, line)
+            ]
+            _ -> [
+              Token(Bang, "!", option.None, line),
+              ..scan_current_token(source, start + 1, current + 1, line)
+            ]
+          }
+        }
+        "=" -> {
+          let next_char = string.slice(source, current + 1, 1)
+          case next_char {
+            "" -> [
+              Token(Equal, "=", option.None, line),
+              Token(EOF, "", option.None, line),
+            ]
+            "=" -> [
+              Token(EqualEqual, "==", option.None, line),
+              ..scan_current_token(source, start + 2, current + 2, line)
+            ]
+            _ -> [
+              Token(Equal, "=", option.None, line),
+              ..scan_current_token(source, start + 1, current + 1, line)
+            ]
+          }
+        }
+        "<" -> {
+          let next_char = string.slice(source, current + 1, 1)
+          case next_char {
+            "" -> [
+              Token(Bang, "!", option.None, line),
+              Token(EOF, "", option.None, line),
+            ]
+            "=" -> [
+              Token(BangEqual, "!=", option.None, line),
+              ..scan_current_token(source, start + 2, current + 2, line)
+            ]
+            _ -> [
+              Token(Bang, "*", option.None, line),
+              ..scan_current_token(source, start + 1, current + 1, line)
+            ]
+          }
+        }
+        ">" -> {
+          let next_char = string.slice(source, current + 1, 1)
+          case next_char {
+            "" -> [
+              Token(Bang, "!", option.None, line),
+              Token(EOF, "", option.None, line),
+            ]
+            "=" -> [
+              Token(BangEqual, "!=", option.None, line),
+              ..scan_current_token(source, start + 2, current + 2, line)
+            ]
+            _ -> [
+              Token(Bang, "*", option.None, line),
+              ..scan_current_token(source, start + 1, current + 1, line)
+            ]
+          }
+        }
+        " " | "\r" | "\t" ->
+          scan_current_token(source, start + 1, current + 1, line)
         "\n" -> scan_current_token(source, start + 1, current + 1, line + 1)
         _ -> {
           [
-            Token(
-              ParseError,
-              string.slice(source, current, 1),
-              option.None,
-              line,
-            ),
+            Token(ParseError, current_char, option.None, line),
             ..scan_current_token(source, start + 1, current + 1, line)
           ]
         }
       }
+    }
   }
 }
 

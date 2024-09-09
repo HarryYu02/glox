@@ -1,6 +1,5 @@
 import gleam/io
 import gleam/list
-import gleam/string
 
 import argv
 import simplifile
@@ -21,8 +20,8 @@ pub fn main() {
               token.token_type == scanner.ParseError
             })
           {
-            False -> exit(0)
             True -> exit(65)
+            False -> exit(0)
           }
         }
         Error(error) -> {
@@ -40,6 +39,3 @@ pub fn main() {
 
 @external(erlang, "erlang", "halt")
 pub fn exit(code: Int) -> Nil
-
-@external(erlang, "init", "stop")
-pub fn stop(code: Int) -> Nil
