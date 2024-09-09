@@ -378,6 +378,70 @@ fn scan_current_token(source: String, line: Int) -> List(Token) {
             _ if is_current_alpha -> {
               let #(identifier, rest) = split_str_until(source, is_alphanumeric)
               case identifier {
+                "and" -> [
+                  Token(And, identifier, option.None, line),
+                  ..scan_current_token(rest, line)
+                ]
+                "class" -> [
+                  Token(Class, identifier, option.None, line),
+                  ..scan_current_token(rest, line)
+                ]
+                "else" -> [
+                  Token(Else, identifier, option.None, line),
+                  ..scan_current_token(rest, line)
+                ]
+                "false" -> [
+                  Token(Falsey, identifier, option.None, line),
+                  ..scan_current_token(rest, line)
+                ]
+                "for" -> [
+                  Token(For, identifier, option.None, line),
+                  ..scan_current_token(rest, line)
+                ]
+                "fun" -> [
+                  Token(Fun, identifier, option.None, line),
+                  ..scan_current_token(rest, line)
+                ]
+                "if" -> [
+                  Token(If, identifier, option.None, line),
+                  ..scan_current_token(rest, line)
+                ]
+                "nil" -> [
+                  Token(Nilly, identifier, option.None, line),
+                  ..scan_current_token(rest, line)
+                ]
+                "or" -> [
+                  Token(Or, identifier, option.None, line),
+                  ..scan_current_token(rest, line)
+                ]
+                "print" -> [
+                  Token(Print, identifier, option.None, line),
+                  ..scan_current_token(rest, line)
+                ]
+                "return" -> [
+                  Token(Return, identifier, option.None, line),
+                  ..scan_current_token(rest, line)
+                ]
+                "super" -> [
+                  Token(Super, identifier, option.None, line),
+                  ..scan_current_token(rest, line)
+                ]
+                "this" -> [
+                  Token(This, identifier, option.None, line),
+                  ..scan_current_token(rest, line)
+                ]
+                "true" -> [
+                  Token(Truey, identifier, option.None, line),
+                  ..scan_current_token(rest, line)
+                ]
+                "var" -> [
+                  Token(Var, identifier, option.None, line),
+                  ..scan_current_token(rest, line)
+                ]
+                "while" -> [
+                  Token(While, identifier, option.None, line),
+                  ..scan_current_token(rest, line)
+                ]
                 _ -> [
                   Token(Identifier, identifier, option.None, line),
                   ..scan_current_token(rest, line)
