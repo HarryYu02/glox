@@ -21,6 +21,11 @@ pub fn is_digit_test() {
   |> should.equal(True)
 }
 
+pub fn is_alpha_test() {
+  scanner.is_alpha("Abcdefghijklmnopqrstuvwxyz_")
+  |> should.equal(True)
+}
+
 pub fn split_str_until_test() {
   scanner.split_str_until("1234asdf", scanner.is_digit)
   |> should.equal(#("1234", "asdf"))

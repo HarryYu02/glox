@@ -153,7 +153,19 @@ pub fn is_digit(str: String) -> Bool {
 pub fn is_alpha(str: String) -> Bool {
   list.all(string.to_utf_codepoints(str), fn(utf_codepoint) {
     let utf_int = string.utf_codepoint_to_int(utf_codepoint)
-    todo
+    { utf_int >= 97 && utf_int <= 122 }
+    || { utf_int >= 65 && utf_int <= 90 }
+    || utf_int == 95
+  })
+}
+
+pub fn is_alphanumeric(str: String) -> Bool {
+  list.all(string.to_utf_codepoints(str), fn(utf_codepoint) {
+    let utf_int = string.utf_codepoint_to_int(utf_codepoint)
+    { utf_int >= 48 && utf_int <= 57 }
+    || { utf_int >= 97 && utf_int <= 122 }
+    || { utf_int >= 65 && utf_int <= 90 }
+    || utf_int == 95
   })
 }
 
@@ -320,7 +332,7 @@ fn scan_current_token(source: String, line: Int) -> List(Token) {
         }
         _ -> {
           let is_current_digit = is_digit(current_char)
-          // let is_current_alpha = is_alpha(current_char)
+          let is_current_alpha = is_alpha(current_char)
           case current_char {
             _ if is_current_digit -> {
               let #(integer, rest) = split_str_until(source, is_digit)
@@ -355,7 +367,13 @@ fn scan_current_token(source: String, line: Int) -> List(Token) {
                 ]
               }
             }
-            // alpha if is_current_alpha -> todo as "identifiers"
+            _ if is_current_alpha -> {
+              let #(identifier, rest) = split_str_until(source, is_alphanumeric)
+              [
+                Token(Identifier, identifier, option.Some(identifier), line),
+                ..scan_current_token(rest, line)
+              ]
+            }
             _ -> [
               Token(UnexpectedCharacterError, current_char, option.None, line),
               ..scan_current_token(string.drop_left(source, 1), line)
