@@ -354,7 +354,15 @@ fn scan_current_token(source: String, line: Int) -> List(Token) {
                       Token(
                         Numbery,
                         integer <> "." <> decimal,
-                        option.Some(integer <> "." <> decimal),
+                        option.Some(
+                          integer
+                          <> "."
+                          <> {
+                            int.parse(decimal)
+                            |> result.unwrap(0)
+                            |> int.to_string
+                          },
+                        ),
                         line,
                       ),
                       ..scan_current_token(rest_after_decimal, line)
