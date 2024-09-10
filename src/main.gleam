@@ -31,6 +31,7 @@ pub fn main() {
         }
       }
     }
+    ["parse", filename] -> todo
     _ -> {
       io.println_error("Usage: ./your_program.sh tokenize <filename>")
       exit(1)
