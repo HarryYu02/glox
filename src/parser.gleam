@@ -74,8 +74,9 @@ pub fn parse_tokens(tokens: List(Token)) -> Expr {
         list.split_while(list.drop(tokens, 1), fn(token) {
           token.token_type != scanner.RightParen
         })
-      io.debug(in_paren)
-      io.debug(rest_with_right_paren)
+      io.debug(parse_tokens(list.drop(tokens, 1)))
+      // io.debug(in_paren)
+      // io.debug(rest_with_right_paren)
       let rest = list.drop(rest_with_right_paren, 1)
       case rest {
         [] -> todo as "no right paren error"
