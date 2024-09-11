@@ -43,6 +43,7 @@ pub fn print_expr(expr: Expr) -> Nil {
 }
 
 pub fn parse_tokens(tokens: List(Token)) -> Expr {
+  io.debug(tokens)
   let current_token = list.first(tokens)
   case current_token {
     Error(Nil) -> todo as "empty"
@@ -70,17 +71,11 @@ pub fn parse_tokens(tokens: List(Token)) -> Expr {
     Ok(scanner.Token(scanner.Stringy, _, literal, _)) ->
       Literal(literal, LoxString)
     Ok(scanner.Token(scanner.LeftParen, ..)) -> {
-      let #(in_paren, rest_with_right_paren) =
-        list.split_while(list.drop(tokens, 1), fn(token) {
-          token.token_type != scanner.RightParen
-        })
-      io.debug(parse_tokens(list.drop(tokens, 1)))
-      // io.debug(in_paren)
-      // io.debug(rest_with_right_paren)
-      let rest = list.drop(rest_with_right_paren, 1)
-      case rest {
-        [] -> todo as "no right paren error"
-        _ -> Grouping(parse_tokens(in_paren))
+      let last_token = list.last(tokens)
+      case last_token {
+        Ok(scanner.Token(scanner.RightParen, ..)) ->
+          Grouping(parse_tokens(drop))
+        _ -> todo as "no right paren error"
       }
     }
     _ -> {
