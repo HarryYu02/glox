@@ -89,6 +89,11 @@ pub fn parse_tokens(tokens: List(Token)) -> Expr {
 
 pub fn parse_source(source: String) {
   let tokens = scanner.scan_tokens(source)
-  let tokens_without_errors = list.filter(tokens, scanner.is_token_valid)
+  let tokens_without_errors =
+    list.filter(tokens, fn(token) {
+      token.token_type != scanner.UnterminatedStringError
+      && token.token_type != scanner.UnexpectedCharacterError
+      && token.token_type != scanner.EOF
+    })
   parse_tokens(tokens_without_errors)
 }
