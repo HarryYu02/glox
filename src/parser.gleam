@@ -74,6 +74,8 @@ pub fn parse_tokens(tokens: List(Token)) -> Expr {
         list.split_while(list.drop(tokens, 1), fn(token) {
           token.token_type != scanner.RightParen
         })
+      io.debug(in_paren)
+      io.debug(rest_with_right_paren)
       let rest = list.drop(rest_with_right_paren, 1)
       case rest {
         [] -> todo as "no right paren error"
@@ -88,10 +90,6 @@ pub fn parse_tokens(tokens: List(Token)) -> Expr {
 
 pub fn parse_source(source: String) {
   let tokens = scanner.scan_tokens(source)
-  let tokens_without_errors =
-    list.filter(tokens, fn(token) {
-      token.token_type != scanner.UnterminatedStringError
-      && token.token_type != scanner.UnexpectedCharacterError
-    })
+  let tokens_without_errors = list.filter(tokens, scanner.is_token_valid)
   parse_tokens(tokens_without_errors)
 }
