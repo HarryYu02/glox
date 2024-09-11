@@ -52,29 +52,7 @@ pub fn parse_tokens(tokens: List(Token)) -> Expr {
   let current_token = list.first(tokens)
   case current_token {
     Error(Nil) -> todo as "empty"
-    Ok(scanner.Token(scanner.BangEqual, ..))
-    | Ok(scanner.Token(scanner.EqualEqual, ..)) -> {
-      todo as "equality"
-    }
-    Ok(scanner.Token(scanner.Greater, ..))
-    | Ok(scanner.Token(scanner.GreaterEqual, ..))
-    | Ok(scanner.Token(scanner.Less, ..))
-    | Ok(scanner.Token(scanner.LessEqual, ..)) -> todo as "comparison"
-    Ok(scanner.Token(scanner.Minus, ..)) | Ok(scanner.Token(scanner.Plus, ..)) ->
-      todo as "term"
-    Ok(scanner.Token(scanner.Slash, ..)) | Ok(scanner.Token(scanner.Star, ..)) ->
-      todo as "factor"
-    Ok(scanner.Token(scanner.Bang, ..)) | Ok(scanner.Token(scanner.Minus, ..)) ->
-      Unary(
-        current_token
-          |> result.unwrap(scanner.Token(
-            scanner.UnexpectedCharacterError,
-            "",
-            option.None,
-            -1,
-          )),
-        parse_tokens(list.drop(tokens, 1)),
-      )
+
     Ok(scanner.Token(scanner.Falsey, ..)) ->
       Literal(option.Some("false"), Boolean)
     Ok(scanner.Token(scanner.Truey, ..)) ->
@@ -92,6 +70,35 @@ pub fn parse_tokens(tokens: List(Token)) -> Expr {
         _ -> todo as "no right paren error"
       }
     }
+
+    Ok(scanner.Token(scanner.Bang, ..)) | Ok(scanner.Token(scanner.Minus, ..)) ->
+      Unary(
+        current_token
+          |> result.unwrap(scanner.Token(
+            scanner.UnexpectedCharacterError,
+            "",
+            option.None,
+            -1,
+          )),
+        parse_tokens(list.drop(tokens, 1)),
+      )
+
+    Ok(scanner.Token(scanner.Slash, ..)) | Ok(scanner.Token(scanner.Star, ..)) ->
+      todo as "factor"
+
+    Ok(scanner.Token(scanner.Greater, ..))
+    | Ok(scanner.Token(scanner.GreaterEqual, ..))
+    | Ok(scanner.Token(scanner.Less, ..))
+    | Ok(scanner.Token(scanner.LessEqual, ..)) -> todo as "comparison"
+
+    Ok(scanner.Token(scanner.Minus, ..)) | Ok(scanner.Token(scanner.Plus, ..)) ->
+      todo as "term"
+
+    Ok(scanner.Token(scanner.BangEqual, ..))
+    | Ok(scanner.Token(scanner.EqualEqual, ..)) -> {
+      todo as "equality"
+    }
+
     _ -> {
       todo as "unknown"
     }
