@@ -462,3 +462,8 @@ fn scan_current_token(source: String, line: Int) -> List(Token) {
 pub fn scan_tokens(source: String) -> List(Token) {
   scan_current_token(source, 1)
 }
+
+pub fn is_token_valid(token: Token) -> Bool {
+  token.token_type != UnterminatedStringError
+  && token.token_type != UnexpectedCharacterError
+}

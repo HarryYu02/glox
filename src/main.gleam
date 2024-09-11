@@ -15,12 +15,7 @@ pub fn main() {
         Ok(contents) -> {
           let tokens = scanner.scan_tokens(contents)
           scanner.print_tokens(tokens)
-          case
-            list.any(tokens, fn(token) {
-              token.token_type == scanner.UnexpectedCharacterError
-              || token.token_type == scanner.UnterminatedStringError
-            })
-          {
+          case list.any(tokens, fn(token) { !scanner.is_token_valid(token) }) {
             True -> exit(65)
             False -> exit(0)
           }
@@ -31,7 +26,9 @@ pub fn main() {
         }
       }
     }
-    ["parse", filename] -> todo
+    ["parse", filename] -> {
+      todo
+    }
     _ -> {
       io.println_error("Usage: ./your_program.sh tokenize <filename>")
       exit(1)
