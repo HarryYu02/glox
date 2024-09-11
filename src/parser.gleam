@@ -79,7 +79,6 @@ pub fn parse_tokens(tokens: List(Token)) -> Expr {
         [] -> todo as "no right paren error"
         _ -> Grouping(parse_tokens(in_paren))
       }
-      todo
     }
     _ -> {
       todo as "unknown"
