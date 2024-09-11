@@ -92,7 +92,6 @@ pub fn parse_source(source: String) {
     list.filter(tokens, fn(token) {
       token.token_type != scanner.UnterminatedStringError
       && token.token_type != scanner.UnexpectedCharacterError
-      && token.token_type != scanner.EOF
     })
   parse_tokens(tokens_without_errors)
 }
