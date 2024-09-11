@@ -14,7 +14,7 @@ pub type LiteralType {
 pub type Expr {
   Binary(left: Expr, op: Token, right: Expr)
   Grouping(expr: Expr)
-  Literal(value: option.Option(String), val_type: String)
+  Literal(value: option.Option(String), val_type: LiteralType)
   Unary(op: Token, right: Expr)
 }
 
@@ -61,13 +61,26 @@ pub fn parse_tokens(tokens: List(Token)) -> Expr {
     Ok(scanner.Token(scanner.Bang, ..)) | Ok(scanner.Token(scanner.Minus, ..)) ->
       todo as "unary"
     Ok(scanner.Token(scanner.Falsey, ..)) ->
-      Literal(option.Some("false"), "bool")
-    Ok(scanner.Token(scanner.Truey, ..)) -> Literal(option.Some("true"), "bool")
-    Ok(scanner.Token(scanner.Nilly, ..)) -> Literal(option.Some("nil"), "null")
+      Literal(option.Some("false"), Boolean)
+    Ok(scanner.Token(scanner.Truey, ..)) ->
+      Literal(option.Some("true"), Boolean)
+    Ok(scanner.Token(scanner.Nilly, ..)) -> Literal(option.Some("nil"), LoxNil)
     Ok(scanner.Token(scanner.Numbery, _, literal, _)) ->
-      Literal(literal, "number")
+      Literal(literal, LoxNumber)
     Ok(scanner.Token(scanner.Stringy, _, literal, _)) ->
-      Literal(literal, "string")
+      Literal(literal, LoxString)
+    Ok(scanner.Token(scanner.LeftParen, ..)) -> {
+      let #(in_paren, rest_with_right_paren) =
+        list.split_while(list.drop(tokens, 1), fn(token) {
+          token.token_type != scanner.RightParen
+        })
+      let rest = list.drop(rest_with_right_paren, 1)
+      case rest {
+        [] -> todo as "no right paren error"
+        _ -> Grouping(parse_tokens(in_paren))
+      }
+      todo
+    }
     _ -> {
       todo as "unknown"
     }
