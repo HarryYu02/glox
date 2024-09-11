@@ -74,7 +74,7 @@ pub fn parse_tokens(tokens: List(Token)) -> Expr {
       let last_token = list.last(tokens)
       case last_token {
         Ok(scanner.Token(scanner.RightParen, ..)) ->
-          Grouping(parse_tokens(drop))
+          Grouping(parse_tokens(list.drop(tokens, 1)))
         _ -> todo as "no right paren error"
       }
     }
