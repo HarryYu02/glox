@@ -1,6 +1,7 @@
 import gleam/io
 import gleam/list
 import gleam/option
+import gleam/result
 
 import scanner.{type Token}
 
@@ -42,6 +43,10 @@ pub fn print_expr(expr: Expr) -> Nil {
   io.println(expr_to_string(expr))
 }
 
+pub fn list_drop_right(lst: List(a), num: Int) -> List(a) {
+  list.take(lst, list.length(lst) - num)
+}
+
 pub fn parse_tokens(tokens: List(Token)) -> Expr {
   io.debug(tokens)
   let current_token = list.first(tokens)
@@ -60,7 +65,16 @@ pub fn parse_tokens(tokens: List(Token)) -> Expr {
     Ok(scanner.Token(scanner.Slash, ..)) | Ok(scanner.Token(scanner.Star, ..)) ->
       todo as "factor"
     Ok(scanner.Token(scanner.Bang, ..)) | Ok(scanner.Token(scanner.Minus, ..)) ->
-      todo as "unary"
+      Unary(
+        current_token
+          |> result.unwrap(scanner.Token(
+            scanner.UnexpectedCharacterError,
+            "",
+            option.None,
+            -1,
+          )),
+        parse_tokens(list.drop(tokens, 1)),
+      )
     Ok(scanner.Token(scanner.Falsey, ..)) ->
       Literal(option.Some("false"), Boolean)
     Ok(scanner.Token(scanner.Truey, ..)) ->
@@ -74,7 +88,7 @@ pub fn parse_tokens(tokens: List(Token)) -> Expr {
       let last_token = list.last(tokens)
       case last_token {
         Ok(scanner.Token(scanner.RightParen, ..)) ->
-          Grouping(parse_tokens(list.drop(tokens, 1)))
+          Grouping(parse_tokens(list_drop_right(list.drop(tokens, 1), 1)))
         _ -> todo as "no right paren error"
       }
     }
